@@ -1,8 +1,11 @@
 from PyQt5.QtWidgets import *
 
+from classify import ClassifyUI
+
 class StartUI(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
+        self.p = parent
         self.initUI()
 
     def initUI(self):
@@ -10,8 +13,8 @@ class StartUI(QWidget):
         selectDir.clicked.connect(self.selectDir)
 
         useSubDir = QCheckBox('하위 폴더 사용하기', self)
-        useSubDir.setChecked(self.parent().v['useSubDir'])
-        useSubDir.stateChanged.connect(lambda x: self.parent().state('useSubDir', x))
+        useSubDir.setChecked(self.p.v['useSubDir'])
+        useSubDir.stateChanged.connect(lambda x: self.p.state('useSubDir', x))
 
         vBox = QVBoxLayout()
         vBox.addStretch(1)
@@ -28,4 +31,6 @@ class StartUI(QWidget):
 
     def selectDir(self):
         dir = QFileDialog.getExistingDirectory(self, '분류할 이미지 폴더 선택하기', './')
-        self.parent().v['dir'] = dir
+        if dir:
+            self.p.v['dir'] = dir
+            self.p.setCentralWidget(ClassifyUI(self.p))
