@@ -18,7 +18,7 @@ class MyApp(QMainWindow):
     def initUI(self):
         self.setWindowTitle('image-classifier')
         self.changeScene(StartUI)
-        self.resize(640, 360)
+        self.resize(960, 540)
         self.center()
         self.show()
 
