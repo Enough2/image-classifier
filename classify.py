@@ -1,13 +1,14 @@
 import os
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QThread, QSize, pyqtSignal
 
 class ClassifyUI(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.p = parent
         self.groups = {}
+        self.imageIdx = 0
         self.initUI()
 
     def initUI(self):
@@ -39,11 +40,11 @@ class ClassifyUI(QWidget):
 
         self.groups['preview'] = QGroupBox('미리보기')
         self.groups['preview'].setFixedSize(self.groups['preview'].height(), self.groups['preview'].height())
-        label = QLabel()
-        label.setPixmap(QPixmap(""))
-        label.setAlignment(Qt.AlignCenter)
+        self.image = QLabel()
+        self.image.setPixmap(QPixmap(""))
+        self.image.setAlignment(Qt.AlignCenter)
         vBox = QVBoxLayout()
-        vBox.addWidget(label)
+        vBox.addWidget(self.image)
         self.groups['preview'].setLayout(vBox)
         grid.addWidget(self.groups['preview'], 0, 0)
 
@@ -65,6 +66,11 @@ class ClassifyUI(QWidget):
     def loadImages(self):
         self.p.thread.stop()
         self.p.statusBar().showMessage(f"파일 불러오기 완료 ({len(self.p.v['images']):,}개)")
+        pixmap = QPixmap(self.p.v['images'][self.imageIdx])
+        pixmap = pixmap.scaledToWidth(self.image.width(), Qt.SmoothTransformation)
+        if pixmap.width() < pixmap.height():
+            pixmap = pixmap.scaledToHeight(self.image.height(), Qt.SmoothTransformation)
+        self.image.setPixmap(pixmap)
 
 class ImportThread(QThread):
     update = pyqtSignal(int)
