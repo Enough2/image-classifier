@@ -20,6 +20,7 @@ class EditDialog(QDialog):
         hBox.addWidget(fileSelect)
         hBox.addWidget(self.fileName)
         self.text = QTextEdit()
+        self.text.setText('\n'.join(self.p.v['labels']))
         vBox.addWidget(label)
         vBox.addLayout(hBox)
         vBox.addWidget(self.text)
