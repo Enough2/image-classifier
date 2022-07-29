@@ -39,11 +39,16 @@ class ClassifyUI(QWidget):
         grid = QGridLayout()
 
         self.groups['preview'] = QGroupBox('미리보기')
-        self.groups['preview'].setFixedSize(self.groups['preview'].height(), self.groups['preview'].height())
+        self.groups['preview'].setFixedWidth(self.groups['preview'].height())
+        self.fileName = QLabel("파일명: ")
+        self.imageInfo = QLabel("너비: 0px, 높이: 0px")
         self.image = QLabel()
         self.image.setPixmap(QPixmap(""))
         self.image.setAlignment(Qt.AlignCenter)
+        self.image.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         vBox = QVBoxLayout()
+        vBox.addWidget(self.fileName)
+        vBox.addWidget(self.imageInfo)
         vBox.addWidget(self.image)
         self.groups['preview'].setLayout(vBox)
         grid.addWidget(self.groups['preview'], 0, 0)
@@ -67,9 +72,9 @@ class ClassifyUI(QWidget):
         self.p.thread.stop()
         self.p.statusBar().showMessage(f"파일 불러오기 완료 ({len(self.p.v['images']):,}개)")
         pixmap = QPixmap(self.p.v['images'][self.imageIdx])
-        pixmap = pixmap.scaledToWidth(self.image.width(), Qt.SmoothTransformation)
-        if pixmap.width() < pixmap.height():
-            pixmap = pixmap.scaledToHeight(self.image.height(), Qt.SmoothTransformation)
+        self.fileName.setText(f"파일명: {self.p.v['images'][self.imageIdx]}")
+        self.imageInfo.setText(f"너비: {pixmap.width():,}px, 높이: {pixmap.height():,}px")
+        pixmap = pixmap.scaled(self.image.width(), self.image.height(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.image.setPixmap(pixmap)
 
 class ImportThread(QThread):
