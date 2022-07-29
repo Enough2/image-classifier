@@ -57,7 +57,9 @@ class ClassifyUI(QWidget):
                 else:
                     text = "미분류"
                 self.p.v['classButtons'][i].setText(f"{i:02} ({text})")
-                self.p.v['classButtons'][i].clicked.connect(lambda x: print(i, text))
+
+    def classify(self, idx):
+        print(self.p.v['images'][self.imageIdx], idx)
 
     def createLayout(self):
         grid = QGridLayout()
@@ -81,7 +83,9 @@ class ClassifyUI(QWidget):
         vBox = QVBoxLayout()
         self.p.v['classButtons'] = []
         for i in range(15):
-            self.p.v['classButtons'].append(QPushButton(f"{i:02} (미분류)"))
+            button = QPushButton(f"{i:02} (미분류)")
+            button.clicked.connect(lambda _, x = i: self.classify(x))
+            self.p.v['classButtons'].append(button)
             vBox.addWidget(self.p.v['classButtons'][i])
         self.groups['classify'].setLayout(vBox)
         grid.addWidget(self.groups['classify'], 0, 1)
