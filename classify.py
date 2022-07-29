@@ -3,6 +3,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt, QThread, QSize, pyqtSignal
 
+from dialog import EditDialog
+
 class ClassifyUI(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
@@ -12,28 +14,43 @@ class ClassifyUI(QWidget):
         self.initUI()
 
     def initUI(self):
-        selectDir = QAction(QIcon('icons/folders.png'), '분류할 이미지 폴더 선택하기', self)
-        selectDir.triggered.connect(self.p.selectDir)
-        undoAction = QAction(QIcon('icons/arrow-back-up.png'), '취소', self)
-        redoAction = QAction(QIcon('icons/arrow-forward-up.png'), '다시 실행', self)
-        exitAction = QAction(QIcon('icons/logout.png'), '종료', self)
-        exitAction.triggered.connect(self.p.close)
-
-        self.p.toolBar = self.p.addToolBar('툴바')
-        self.p.toolBar.addAction(selectDir)
-        self.p.toolBar.addAction(undoAction)
-        self.p.toolBar.addAction(redoAction)
-        self.p.toolBar.addAction(exitAction)
-
         self.p.progressBar = QProgressBar()
         self.p.statusBar().addPermanentWidget(self.p.progressBar)
 
+        self.createToolBar()
         self.createLayout()
 
         self.p.thread = ImportThread(self.p)
         self.p.thread.update.connect(lambda x: self.p.statusBar().showMessage(f"파일 불러오는 중... ({x:,}개)"))
         self.p.thread.finished.connect(lambda x: self.loadImages() if x else None)
         self.p.thread.start()
+
+    def createToolBar(self):
+        self.p.toolBar = self.p.addToolBar('툴바')
+
+        selectDir = QAction(QIcon('icons/folders.png'), '분류할 이미지 폴더 선택하기', self)
+        selectDir.triggered.connect(self.p.selectDir)
+        self.p.toolBar.addAction(selectDir)
+
+        undoAction = QAction(QIcon('icons/arrow-back-up.png'), '취소', self)
+        self.p.toolBar.addAction(undoAction)
+
+        redoAction = QAction(QIcon('icons/arrow-forward-up.png'), '다시 실행', self)
+        self.p.toolBar.addAction(redoAction)
+
+        editAction = QAction(QIcon('icons/edit.png'), '분류 수정', self)
+        editAction.triggered.connect(self.classEdit)
+        self.p.toolBar.addAction(editAction)
+
+        exitAction = QAction(QIcon('icons/logout.png'), '종료', self)
+        exitAction.triggered.connect(self.p.close)
+        self.p.toolBar.addAction(exitAction)
+
+    def classEdit(self):
+        dialog = EditDialog(self.p)
+        dialog.exec_()
+        print(dialog.text.toPlainText())
+
 
     def createLayout(self):
         grid = QGridLayout()

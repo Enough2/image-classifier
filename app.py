@@ -8,7 +8,7 @@ from classify import ClassifyUI
 class MyApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.v = {'useSubDir': True, 'dir': '', 'images': []}
+        self.v = {'useSubDir': True, 'dir': '', 'images': [], 'labels': []}
         self.exts = ['png', 'jpg', 'jpeg']
         self.toolBar = None
         self.progressBar = None
