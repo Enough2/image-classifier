@@ -48,9 +48,16 @@ class ClassifyUI(QWidget):
 
     def classEdit(self):
         dialog = EditDialog(self.p)
-        dialog.exec_()
-        print(dialog.text.toPlainText())
-
+        if dialog.exec():
+            lines = dialog.text.toPlainText().split("\n")
+            self.p.v['labels'] = [line for line in lines]
+            for i in range(15):
+                if i < len(self.p.v['labels']) and self.p.v['labels'][i]:
+                    text = self.p.v['labels'][i][:10]
+                else:
+                    text = "미분류"
+                self.p.v['classButtons'][i].setText(f"{i:02} ({text})")
+                self.p.v['classButtons'][i].clicked.connect(lambda x: print(i, text))
 
     def createLayout(self):
         grid = QGridLayout()
@@ -72,8 +79,10 @@ class ClassifyUI(QWidget):
 
         self.groups['classify'] = QGroupBox('분류')
         vBox = QVBoxLayout()
-        for i in range(10):
-            vBox.addWidget(QPushButton(str(i)))
+        self.p.v['classButtons'] = []
+        for i in range(15):
+            self.p.v['classButtons'].append(QPushButton(f"{i:02} (미분류)"))
+            vBox.addWidget(self.p.v['classButtons'][i])
         self.groups['classify'].setLayout(vBox)
         grid.addWidget(self.groups['classify'], 0, 1)
 
