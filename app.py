@@ -8,11 +8,16 @@ from classify import ClassifyUI
 class MyApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.v = {'useSubDir': True, 'dir': '', 'images': [], 'labels': [], 'classButtons': []}
+        self.useSubDir = True
+        self.dir = ""
         self.exts = ['png', 'jpg', 'jpeg']
         self.toolBar = None
         self.progressBar = None
         self.thread = None
+        self.fileList = None
+        self.images = []
+        self.labels = []
+        self.classButtons: []
         self.initUI()
 
     def initUI(self):
@@ -29,9 +34,6 @@ class MyApp(QMainWindow):
         frame.moveCenter(center)
         self.move(frame.topLeft())
 
-    def state(self, key, state):
-        self.v[key] = state == Qt.Checked;
-
     def changeScene(self, scene):
         if self.toolBar:
             self.removeToolBar(self.toolBar)
@@ -42,7 +44,7 @@ class MyApp(QMainWindow):
     def selectDir(self):
         dir = QFileDialog.getExistingDirectory(self, '분류할 이미지 폴더 선택하기')
         if dir:
-            self.v['dir'] = dir
+            self.dir = dir
             if self.thread:
                 self.thread.stop()
             self.changeScene(ClassifyUI)

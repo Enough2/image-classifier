@@ -50,16 +50,16 @@ class ClassifyUI(QWidget):
         dialog = EditDialog(self.p)
         if dialog.exec():
             lines = dialog.text.toPlainText().split("\n")
-            self.p.v['labels'] = [line for line in lines]
+            self.p.labels = [line for line in lines]
             for i in range(15):
-                if i < len(self.p.v['labels']) and self.p.v['labels'][i]:
-                    text = self.p.v['labels'][i][:10]
+                if i < len(self.p.labels) and self.p.labels[i]:
+                    text = self.p.labels[i][:10]
                 else:
                     text = "미분류"
-                self.p.v['classButtons'][i].setText(f"{i:02} ({text})")
+                self.p.classButtons[i].setText(f"{i:02} ({text})")
 
     def classify(self, idx):
-        print(self.p.v['images'][self.imageIdx], idx)
+        print(self.p.images[self.imageIdx], idx)
 
     def createLayout(self):
         grid = QGridLayout()
@@ -85,19 +85,19 @@ class ClassifyUI(QWidget):
 
         self.groups['classify'] = QGroupBox('분류')
         vBox = QVBoxLayout()
-        self.p.v['classButtons'] = []
+        self.p.classButtons = []
         for i in range(15):
             button = QPushButton(f"{i:02} (미분류)")
             button.clicked.connect(lambda _, x = i: self.classify(x))
-            self.p.v['classButtons'].append(button)
-            vBox.addWidget(self.p.v['classButtons'][i])
+            self.p.classButtons.append(button)
+            vBox.addWidget(self.p.classButtons[i])
         self.groups['classify'].setLayout(vBox)
         grid.addWidget(self.groups['classify'], 0, 1)
 
         self.groups['file'] = QGroupBox('파일')
         vBox = QVBoxLayout()
-        self.files = QListWidget(self.groups['file'])
-        vBox.addWidget(self.files)
+        self.fileList = QListWidget(self.groups['file'])
+        vBox.addWidget(self.fileList)
         self.groups['file'].setLayout(vBox)
         grid.addWidget(self.groups['file'], 0, 2)
 
@@ -105,9 +105,9 @@ class ClassifyUI(QWidget):
 
     def loadImages(self):
         self.p.thread.stop()
-        self.p.statusBar().showMessage(f"파일 불러오기 완료 ({len(self.p.v['images']):,}개)")
-        pixmap = QPixmap(self.p.v['images'][self.imageIdx])
-        self.fileName.setText(self.p.v['images'][self.imageIdx])
+        self.p.statusBar().showMessage(f"파일 불러오기 완료 ({len(self.p.images):,}개)")
+        pixmap = QPixmap(self.p.images[self.imageIdx])
+        self.fileName.setText(self.p.images[self.imageIdx])
         self.imageInfo.setText(f"너비: {pixmap.width():,}px, 높이: {pixmap.height():,}px")
         pixmap = pixmap.scaled(self.image.width(), self.image.height(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.image.setPixmap(pixmap)
@@ -117,10 +117,8 @@ class ClassifyUI(QWidget):
             self.p.statusBar().showMessage("파일 불러오는 중... (0개)")
             return
 
-        self.p.v['images'].append(path)
-        self.p.statusBar().showMessage(f"파일 불러오는 중... ({len(self.p.v['images']):,}개)")
-    
-        self.files.addItem(path)
+        self.p.images.append(path)
+        self.p.statusBar().showMessage(f"파일 불러오는 중... ({len(self.p.images):,}개)")
 
 class ImportThread(QThread):
     update = pyqtSignal(str)
@@ -131,25 +129,22 @@ class ImportThread(QThread):
         self.p = parent
 
     def run(self):
-        images = []
-
         self.p.progressBar.setRange(0, 0)
         self.p.progressBar.setValue(0)
         self.update.emit("")
 
-        if self.p.v['useSubDir']:
-            for root, dirs, files in os.walk(self.p.v['dir']):
+        if self.p.useSubDir:
+            for root, dirs, files in os.walk(self.p.dir):
                 for file in files:
                     if file.split('.')[-1] in self.p.exts:
                         self.update.emit(os.path.join(root, file))
         else:
-            for file in os.listdir(self.p.v['dir']):
+            for file in os.listdir(self.p.dir):
                 if file.split('.')[-1] in self.p.exts:
-                    self.update.emit(os.path.join(self.p.v['dir'], file))
+                    self.update.emit(os.path.join(self.p.dir, file))
 
-        self.p.v['images'] = images
-        self.finished.emit(True)
         self.p.progressBar.hide()
+        self.finished.emit(True)
 
     def stop(self):
         self.terminate()

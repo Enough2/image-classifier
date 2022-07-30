@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt
 
 class StartUI(QWidget):
     def __init__(self, parent):
@@ -11,8 +12,8 @@ class StartUI(QWidget):
         selectDir.clicked.connect(self.p.selectDir)
 
         useSubDir = QCheckBox('하위 폴더 사용하기', self)
-        useSubDir.setChecked(self.p.v['useSubDir'])
-        useSubDir.stateChanged.connect(lambda x: self.p.state('useSubDir', x))
+        useSubDir.setChecked(self.p.useSubDir)
+        useSubDir.stateChanged.connect(self.useSubDir)
 
         vBox = QVBoxLayout()
         vBox.addStretch(1)
@@ -26,3 +27,6 @@ class StartUI(QWidget):
         hBox.addStretch(1)
 
         self.setLayout(hBox)
+
+    def useSubDir(self, x):
+        self.p.useSubDir = x == Qt.Checked
