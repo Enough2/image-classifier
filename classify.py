@@ -65,7 +65,7 @@ class ClassifyUI(QWidget):
         grid = QGridLayout()
 
         self.groups['preview'] = QGroupBox('미리보기')
-        self.groups['preview'].setFixedWidth(self.groups['preview'].height())
+        self.groups['preview'].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         fileNameBox = QHBoxLayout()
         self.fileName = QLineEdit()
         fileNameBox.addWidget(QLabel("파일명:"))

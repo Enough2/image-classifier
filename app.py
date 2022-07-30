@@ -23,7 +23,7 @@ class MyApp(QMainWindow):
     def initUI(self):
         self.setWindowTitle('image-classifier')
         self.changeScene(StartUI)
-        self.setFixedSize(960, 540)
+        self.setFixedSize(1280, 720)
         self.statusBar().setSizeGripEnabled(False)
         self.center()
         self.show()
