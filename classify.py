@@ -21,7 +21,7 @@ class ClassifyUI(QWidget):
         self.createLayout()
 
         self.p.thread = ImportThread(self.p)
-        self.p.thread.update.connect(lambda x: self.p.statusBar().showMessage(f"파일 불러오는 중... ({x:,}개)"))
+        self.p.thread.update.connect(lambda x: self.addImage(x))
         self.p.thread.finished.connect(lambda x: self.loadImages() if x else None)
         self.p.thread.start()
 
@@ -66,14 +66,18 @@ class ClassifyUI(QWidget):
 
         self.groups['preview'] = QGroupBox('미리보기')
         self.groups['preview'].setFixedWidth(self.groups['preview'].height())
-        self.fileName = QLabel("파일명: ")
+        fileNameBox = QHBoxLayout()
+        self.fileName = QLineEdit()
+        fileNameBox.addWidget(QLabel("파일명:"))
+        fileNameBox.addWidget(self.fileName)
+        self.fileName.setReadOnly(True)
         self.imageInfo = QLabel("너비: 0px, 높이: 0px")
         self.image = QLabel()
         self.image.setPixmap(QPixmap(""))
         self.image.setAlignment(Qt.AlignCenter)
         self.image.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         vBox = QVBoxLayout()
-        vBox.addWidget(self.fileName)
+        vBox.addLayout(fileNameBox)
         vBox.addWidget(self.imageInfo)
         vBox.addWidget(self.image)
         self.groups['preview'].setLayout(vBox)
@@ -92,7 +96,8 @@ class ClassifyUI(QWidget):
 
         self.groups['file'] = QGroupBox('파일')
         vBox = QVBoxLayout()
-        vBox.addWidget(QListWidget(self.groups['file']))
+        self.files = QListWidget(self.groups['file'])
+        vBox.addWidget(self.files)
         self.groups['file'].setLayout(vBox)
         grid.addWidget(self.groups['file'], 0, 2)
 
@@ -102,13 +107,23 @@ class ClassifyUI(QWidget):
         self.p.thread.stop()
         self.p.statusBar().showMessage(f"파일 불러오기 완료 ({len(self.p.v['images']):,}개)")
         pixmap = QPixmap(self.p.v['images'][self.imageIdx])
-        self.fileName.setText(f"파일명: {self.p.v['images'][self.imageIdx]}")
+        self.fileName.setText(self.p.v['images'][self.imageIdx])
         self.imageInfo.setText(f"너비: {pixmap.width():,}px, 높이: {pixmap.height():,}px")
         pixmap = pixmap.scaled(self.image.width(), self.image.height(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.image.setPixmap(pixmap)
 
+    def addImage(self, path):
+        if not path:
+            self.p.statusBar().showMessage("파일 불러오는 중... (0개)")
+            return
+
+        self.p.v['images'].append(path)
+        self.p.statusBar().showMessage(f"파일 불러오는 중... ({len(self.p.v['images']):,}개)")
+    
+        self.files.addItem(path)
+
 class ImportThread(QThread):
-    update = pyqtSignal(int)
+    update = pyqtSignal(str)
     finished = pyqtSignal(bool)
 
     def __init__(self, parent):
@@ -120,19 +135,17 @@ class ImportThread(QThread):
 
         self.p.progressBar.setRange(0, 0)
         self.p.progressBar.setValue(0)
-        self.update.emit(0)
+        self.update.emit("")
 
         if self.p.v['useSubDir']:
             for root, dirs, files in os.walk(self.p.v['dir']):
                 for file in files:
                     if file.split('.')[-1] in self.p.exts:
-                        images.append(os.path.join(root, file))
-                        self.update.emit(len(images))
+                        self.update.emit(os.path.join(root, file))
         else:
             for file in os.listdir(self.p.v['dir']):
                 if file.split('.')[-1] in self.p.exts:
-                    images.append(os.path.join(self.p.v['dir'], file))
-                    self.update.emit(len(images))
+                    self.update.emit(os.path.join(self.p.v['dir'], file))
 
         self.p.v['images'] = images
         self.finished.emit(True)
