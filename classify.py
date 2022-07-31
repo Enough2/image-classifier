@@ -59,8 +59,10 @@ class ClassifyUI(QWidget):
             for i in range(15):
                 if i < len(self.p.labels) and self.p.labels[i]:
                     self.p.classButtons[i].setText(f"{i:02} ({self.p.labels[i][:10]})")
+                    self.p.tabs[i].setText(0, f"{i:02} ({self.p.labels[i][:10]})")
                 else:
                     self.p.classButtons[i].setText(f"{i:02} (미분류)")
+                    self.p.tabs[i].setText(0, f"{i:02} (미분류)")
 
     def save(self):
         save = QFileDialog.getSaveFileName(self, '저장할 파일 선택하기', '', 'JSON 파일(*.json)')
