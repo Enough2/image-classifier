@@ -1,4 +1,5 @@
 import os
+import json
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt, QThread, QSize, pyqtSignal
@@ -42,6 +43,10 @@ class ClassifyUI(QWidget):
         editAction.triggered.connect(self.classEdit)
         self.p.toolBar.addAction(editAction)
 
+        saveAction = QAction(QIcon('icons/download.png'), '저장할 파일 선택하기', self)
+        saveAction.triggered.connect(self.save)
+        self.p.toolBar.addAction(saveAction)
+
         exitAction = QAction(QIcon('icons/logout.png'), '종료', self)
         exitAction.triggered.connect(self.p.close)
         self.p.toolBar.addAction(exitAction)
@@ -53,13 +58,25 @@ class ClassifyUI(QWidget):
             self.p.labels = [line for line in lines]
             for i in range(15):
                 if i < len(self.p.labels) and self.p.labels[i]:
-                    text = self.p.labels[i][:10]
+                    self.p.classButtons[i].setText(f"{i:02} ({self.p.labels[i][:10]})")
                 else:
-                    text = "미분류"
-                self.p.classButtons[i].setText(f"{i:02} ({text})")
+                    self.p.classButtons[i].setText(f"{i:02} (미분류)")
+
+    def save(self):
+        save = QFileDialog.getSaveFileName(self, '저장할 파일 선택하기', '', 'JSON 파일(*.json)')
+        if save[0]:
+            self.p.save = save[0]
+            with open(self.p.save, 'w', encoding='utf-8') as file:
+                json.dump(self.p.data, file, ensure_ascii=False)
 
     def classify(self, idx):
-        print(self.p.images[self.imageIdx], idx)
+        self.p.data[idx].append(self.p.images[self.imageIdx])
+        QTreeWidgetItem(self.p.tabs[idx], [self.p.images[self.imageIdx]])
+        with open(self.p.save, 'w', encoding='utf-8') as file:
+            json.dump(self.p.data, file, ensure_ascii=False)
+
+        self.imageIdx += 1
+        self.displayImage(self.imageIdx)
 
     def createLayout(self):
         grid = QGridLayout()
@@ -97,21 +114,31 @@ class ClassifyUI(QWidget):
 
         self.groups['file'] = QGroupBox('파일')
         vBox = QVBoxLayout()
-        self.fileList = QListWidget(self.groups['file'])
-        vBox.addWidget(self.fileList)
+        self.p.fileTree = QTreeWidget()
+        self.p.fileTree.setHeaderLabels(['파일명'])
+        for i in range(15):
+            if i < len(self.p.labels) and self.p.labels[i]:
+                self.p.tabs.append(QTreeWidgetItem([f"{i:02} ({self.p.labels[i][:10]})"]))
+            else:
+                self.p.tabs.append(QTreeWidgetItem([f"{i:02} (미분류)"]))
+            self.p.fileTree.addTopLevelItem(self.p.tabs[i])
+        vBox.addWidget(self.p.fileTree)
         self.groups['file'].setLayout(vBox)
         grid.addWidget(self.groups['file'], 0, 2)
 
         self.setLayout(grid)
 
-    def loadImages(self):
-        self.p.thread.stop()
-        self.p.statusBar().showMessage(f"파일 불러오기 완료 ({len(self.p.images):,}개)")
-        pixmap = QPixmap(self.p.images[self.imageIdx])
-        self.fileName.setText(self.p.images[self.imageIdx])
+    def displayImage(self, idx):
+        pixmap = QPixmap(self.p.images[idx])
+        self.fileName.setText(self.p.images[idx])
         self.imageInfo.setText(f"너비: {pixmap.width():,}px, 높이: {pixmap.height():,}px")
         pixmap = pixmap.scaled(self.image.width(), self.image.height(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.image.setPixmap(pixmap)
+
+    def loadImages(self):
+        self.p.thread.stop()
+        self.p.statusBar().showMessage(f"파일 불러오기 완료 ({len(self.p.images):,}개)")
+        self.displayImage(self.imageIdx)
 
     def addImage(self, path):
         if not path:

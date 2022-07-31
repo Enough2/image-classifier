@@ -10,14 +10,18 @@ class MyApp(QMainWindow):
         super().__init__()
         self.useSubDir = True
         self.dir = ""
+        self.save = ""
         self.exts = ['png', 'jpg', 'jpeg']
         self.toolBar = None
         self.progressBar = None
         self.thread = None
-        self.fileList = None
+
         self.images = []
         self.labels = []
-        self.classButtons: []
+        self.classButtons = []
+        self.tabs = []
+        self.data = [[] for _ in range(15)]
+        
         self.initUI()
 
     def initUI(self):
