@@ -10,6 +10,10 @@ class ClassifyUI(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.p = parent
+        self.p.images = []
+        self.p.classButtons = []
+        self.p.tabs = []
+        self.p.data = [[] for _ in range(15)]
         self.groups = {}
         self.imageIdx = 0
         self.initUI()
@@ -55,9 +59,9 @@ class ClassifyUI(QWidget):
         dir = QFileDialog.getExistingDirectory(self, '분류할 이미지 폴더 선택하기')
         if dir:
             self.p.dir = dir
-            if self.thread:
-                self.thread.stop()
-            self.changeScene(ClassifyUI)
+            if self.p.thread:
+                self.p.thread.stop()
+            self.p.changeScene(ClassifyUI)
 
     def classEdit(self):
         dialog = EditDialog(self.p)
@@ -78,6 +82,7 @@ class ClassifyUI(QWidget):
             self.p.save = save[0]
             with open(self.p.save, 'w', encoding='utf-8') as file:
                 json.dump(self.p.data, file, ensure_ascii=False)
+            self.saveName.setText(self.p.save)
 
     def classify(self, idx):
         self.p.data[idx].append(self.p.images[self.imageIdx])
@@ -93,23 +98,27 @@ class ClassifyUI(QWidget):
 
         self.groups['preview'] = QGroupBox('미리보기')
         self.groups['preview'].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
         fileVBox = QHBoxLayout()
         self.fileName = QLineEdit()
         self.fileName.setReadOnly(True)
         self.fileName.setCursor(Qt.IBeamCursor)
         fileVBox.addWidget(QLabel("파일명:"))
         fileVBox.addWidget(self.fileName)
+
         self.imageInfo = QLabel("너비: 0px, 높이: 0px")
         self.image = QLabel()
         self.image.setPixmap(QPixmap(""))
         self.image.setAlignment(Qt.AlignCenter)
         self.image.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
         vBox = QVBoxLayout()
         vBox.addLayout(fileVBox)
         vBox.addWidget(self.imageInfo)
         vBox.addWidget(self.image)
         self.groups['preview'].setLayout(vBox)
         grid.addWidget(self.groups['preview'], 0, 0)
+
 
         self.groups['classify'] = QGroupBox('분류')
         vBox = QVBoxLayout()
@@ -125,8 +134,25 @@ class ClassifyUI(QWidget):
         self.groups['classify'].setLayout(vBox)
         grid.addWidget(self.groups['classify'], 0, 1)
 
+    
         self.groups['file'] = QGroupBox('파일')
-        vBox = QVBoxLayout()
+
+        dirVBox = QHBoxLayout()
+        self.dirName = QLineEdit()
+        self.dirName.setReadOnly(True)
+        self.dirName.setCursor(Qt.IBeamCursor)
+        self.dirName.setText(self.p.dir)
+        dirVBox.addWidget(QLabel("폴더명:"))
+        dirVBox.addWidget(self.dirName)
+
+        saveVBox = QHBoxLayout()
+        self.saveName = QLineEdit()
+        self.saveName.setReadOnly(True)
+        self.saveName.setCursor(Qt.IBeamCursor)
+        self.saveName.setText(self.p.save)
+        saveVBox.addWidget(QLabel("파일명:"))
+        saveVBox.addWidget(self.saveName)
+
         self.p.fileTree = QTreeWidget()
         self.p.fileTree.setHeaderLabels(['파일명'])
         for i in range(15):
@@ -135,6 +161,10 @@ class ClassifyUI(QWidget):
             else:
                 self.p.tabs.append(QTreeWidgetItem([f"{i:02} (미분류)"]))
             self.p.fileTree.addTopLevelItem(self.p.tabs[i])
+        
+        vBox = QVBoxLayout()
+        vBox.addLayout(dirVBox)
+        vBox.addLayout(saveVBox)
         vBox.addWidget(self.p.fileTree)
         self.groups['file'].setLayout(vBox)
         grid.addWidget(self.groups['file'], 0, 2)
