@@ -21,6 +21,8 @@ class MyApp(QMainWindow):
         self.classButtons = []
         self.tabs = []
         self.data = [[] for _ in range(15)]
+        self.undoRecord = []
+        self.redoRecord = []
         
         self.initUI()
 

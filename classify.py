@@ -14,6 +14,8 @@ class ClassifyUI(QWidget):
         self.p.classButtons = []
         self.p.tabs = []
         self.p.data = [[] for _ in range(15)]
+        self.p.undoRecord = []
+        self.p.redoRecord = []
         self.groups = {}
         self.imageIdx = 0
         self.initUI()
@@ -37,11 +39,15 @@ class ClassifyUI(QWidget):
         selectDir.triggered.connect(self.selectDir)
         self.p.toolBar.addAction(selectDir)
 
-        undoAction = QAction(QIcon('icons/arrow-back-up.png'), '취소', self)
-        self.p.toolBar.addAction(undoAction)
+        self.undoAction = QAction(QIcon('icons/arrow-back-up.png'), '취소', self)
+        self.undoAction.triggered.connect(self.undo)
+        self.undoAction.setDisabled(True)
+        self.p.toolBar.addAction(self.undoAction)
 
-        redoAction = QAction(QIcon('icons/arrow-forward-up.png'), '다시 실행', self)
-        self.p.toolBar.addAction(redoAction)
+        self.redoAction = QAction(QIcon('icons/arrow-forward-up.png'), '다시 실행', self)
+        self.redoAction.triggered.connect(self.redo)
+        self.redoAction.setDisabled(True)
+        self.p.toolBar.addAction(self.redoAction)
 
         editAction = QAction(QIcon('icons/edit.png'), '분류 수정', self)
         editAction.triggered.connect(self.classEdit)
@@ -62,6 +68,28 @@ class ClassifyUI(QWidget):
             if self.p.thread:
                 self.p.thread.stop()
             self.p.changeScene(ClassifyUI)
+
+    def undo(self):
+        if self.imageIdx > 0 and self.p.undoRecord:
+            idx = self.p.undoRecord.pop()
+            if len(self.p.undoRecord) == 0:
+                self.undoAction.setDisabled(True)
+            self.p.redoRecord.append(idx)
+            self.redoAction.setDisabled(False)
+            self.imageIdx -= 1
+            self.displayImage(self.imageIdx)
+            self.p.data[idx].pop()
+            self.p.tabs[idx].takeChild(self.p.tabs[idx].childCount() - 1)
+            with open(self.p.save, 'w', encoding='utf-8') as file:
+                json.dump(self.p.data, file, ensure_ascii=False)
+
+    def redo(self):
+        if self.p.redoRecord:
+            idx = self.p.redoRecord.pop()
+            if len(self.p.redoRecord) == 0:
+                self.redoAction.setDisabled(True)
+            self.p.undoRecord.append(idx)
+            self.classify(idx)
 
     def classEdit(self):
         dialog = EditDialog(self.p)
@@ -92,6 +120,8 @@ class ClassifyUI(QWidget):
 
         self.imageIdx += 1
         self.displayImage(self.imageIdx)
+        self.p.undoRecord.append(idx) 
+        self.undoAction.setDisabled(False)
 
     def createLayout(self):
         grid = QGridLayout()
