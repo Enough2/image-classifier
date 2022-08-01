@@ -30,7 +30,7 @@ class ClassifyUI(QWidget):
         self.p.toolBar = self.p.addToolBar('툴바')
 
         selectDir = QAction(QIcon('icons/folders.png'), '분류할 이미지 폴더 선택하기', self)
-        selectDir.triggered.connect(self.p.selectDir)
+        selectDir.triggered.connect(self.selectDir)
         self.p.toolBar.addAction(selectDir)
 
         undoAction = QAction(QIcon('icons/arrow-back-up.png'), '취소', self)
@@ -44,12 +44,20 @@ class ClassifyUI(QWidget):
         self.p.toolBar.addAction(editAction)
 
         saveAction = QAction(QIcon('icons/download.png'), '저장할 파일 선택하기', self)
-        saveAction.triggered.connect(self.save)
+        saveAction.triggered.connect(self.selectSave)
         self.p.toolBar.addAction(saveAction)
 
         exitAction = QAction(QIcon('icons/logout.png'), '종료', self)
         exitAction.triggered.connect(self.p.close)
         self.p.toolBar.addAction(exitAction)
+
+    def selectDir(self):
+        dir = QFileDialog.getExistingDirectory(self, '분류할 이미지 폴더 선택하기')
+        if dir:
+            self.p.dir = dir
+            if self.thread:
+                self.thread.stop()
+            self.changeScene(ClassifyUI)
 
     def classEdit(self):
         dialog = EditDialog(self.p)
@@ -64,7 +72,7 @@ class ClassifyUI(QWidget):
                     self.p.classButtons[i].setText(f"{i:02} (미분류)")
                     self.p.tabs[i].setText(0, f"{i:02} (미분류)")
 
-    def save(self):
+    def selectSave(self):
         save = QFileDialog.getSaveFileName(self, '저장할 파일 선택하기', '', 'JSON 파일(*.json)')
         if save[0]:
             self.p.save = save[0]
@@ -107,7 +115,10 @@ class ClassifyUI(QWidget):
         vBox = QVBoxLayout()
         self.p.classButtons = []
         for i in range(15):
-            button = QPushButton(f"{i:02} (미분류)")
+            if i < len(self.p.labels) and self.p.labels[i]:
+                button = QPushButton(f"{i:02} ({self.p.labels[i][:10]})")
+            else:
+                button = QPushButton(f"{i:02} (미분류)")
             button.clicked.connect(lambda _, x = i: self.classify(x))
             self.p.classButtons.append(button)
             vBox.addWidget(self.p.classButtons[i])

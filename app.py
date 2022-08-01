@@ -45,14 +45,6 @@ class MyApp(QMainWindow):
         self.statusBar().removeWidget(self.progressBar)
         self.setCentralWidget(scene(self))
 
-    def selectDir(self):
-        dir = QFileDialog.getExistingDirectory(self, '분류할 이미지 폴더 선택하기')
-        if dir:
-            self.dir = dir
-            if self.thread:
-                self.thread.stop()
-            self.changeScene(ClassifyUI)
-
 
 
 if __name__ == '__main__':
