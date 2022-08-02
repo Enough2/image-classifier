@@ -20,7 +20,7 @@ class MyApp(QMainWindow):
         self.labels = []
         self.classButtons = []
         self.tabs = []
-        self.data = [[] for _ in range(15)]
+        self.data = [[] for _ in range(20)]
         self.undoRecord = []
         self.redoRecord = []
         

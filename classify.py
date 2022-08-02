@@ -13,7 +13,7 @@ class ClassifyUI(QWidget):
         self.p.images = []
         self.p.classButtons = []
         self.p.tabs = []
-        self.p.data = [[] for _ in range(15)]
+        self.p.data = [[] for _ in range(20)]
         self.p.undoRecord = []
         self.p.redoRecord = []
         self.groups = {}
@@ -97,7 +97,7 @@ class ClassifyUI(QWidget):
         if dialog.exec():
             lines = dialog.text.toPlainText().split("\n")
             self.p.labels = [line for line in lines]
-            for i in range(15):
+            for i in range(0):
                 if i < len(self.p.labels) and self.p.labels[i]:
                     self.p.classButtons[i].setText(f"{i:02} ({self.p.labels[i][:10]})")
                     self.p.tabs[i].setText(0, f"{i:02} ({self.p.labels[i][:10]})")
@@ -155,7 +155,7 @@ class ClassifyUI(QWidget):
         self.groups['classify'] = QGroupBox('분류')
         vBox = QVBoxLayout()
         self.p.classButtons = []
-        for i in range(15):
+        for i in range(20):
             if i < len(self.p.labels) and self.p.labels[i]:
                 button = QPushButton(f"{i:02} ({self.p.labels[i][:10]})")
             else:
@@ -187,7 +187,7 @@ class ClassifyUI(QWidget):
 
         self.p.fileTree = QTreeWidget()
         self.p.fileTree.setHeaderLabels(['파일명'])
-        for i in range(15):
+        for i in range(20):
             if i < len(self.p.labels) and self.p.labels[i]:
                 self.p.tabs.append(QTreeWidgetItem([f"{i:02} ({self.p.labels[i][:10]})"]))
             else:

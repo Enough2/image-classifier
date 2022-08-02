@@ -11,7 +11,7 @@ class EditDialog(QDialog):
         self.setFixedSize(640, 360)
 
         vBox = QVBoxLayout()
-        label = QLabel('분류에 사용될 식별자를 입력해주세요. (최대 15개, 0~14번)')
+        label = QLabel('분류에 사용될 식별자를 입력해주세요. (최대 20개, 0~19번)')
         hBox = QHBoxLayout()
         fileSelect = QPushButton("분류 텍스트 파일 선택하기")
         fileSelect.clicked.connect(self.selectFile)
