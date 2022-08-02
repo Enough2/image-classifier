@@ -80,6 +80,7 @@ class ClassifyUI(QWidget):
             self.displayImage(self.imageIdx)
             self.p.data[idx].pop()
             self.p.tabs[idx].takeChild(self.p.tabs[idx].childCount() - 1)
+            self.p.statusBar().showMessage(f"분류 ({self.imageIdx:,}/{len(self.p.images):,}개)")
             with open(self.p.save, 'w', encoding='utf-8') as file:
                 json.dump(self.p.data, file, ensure_ascii=False)
 
@@ -122,6 +123,7 @@ class ClassifyUI(QWidget):
         self.displayImage(self.imageIdx)
         self.p.undoRecord.append(idx) 
         self.undoAction.setDisabled(False)
+        self.p.statusBar().showMessage(f"분류 ({self.imageIdx:,}/{len(self.p.images):,}개)")
 
     def createLayout(self):
         grid = QGridLayout()
